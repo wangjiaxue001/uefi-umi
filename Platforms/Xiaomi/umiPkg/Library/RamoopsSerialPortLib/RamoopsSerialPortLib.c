@@ -21,10 +21,74 @@
 #include <Library/BaseLib.h>
 #include <Library/SerialPortLib.h>
 
+#include "ScreenFontData.h"
+
 #define UMI_RAMOOPS_CONSOLE_BASE  0xB0000000ULL
 #define UMI_RAMOOPS_CONSOLE_SIZE  0x00200000U
 #define UMI_RAMOOPS_PMSG_BASE     0xB0200000ULL
 #define UMI_RAMOOPS_SIGNATURE     0x43474244U
+
+// ---- cmi bring-up screen console -----------------------------------------
+// The inherited framebuffer at 0x9C000000 is still being scanned out after
+// ABL jumps to UEFI (proved by the SEC framebuffer clear + progress blocks).
+// Mirror every DEBUG character onto it, starting at row 6 so the SEC progress
+// blocks at rows 0..2 stay visible. No GOP, no font protocol, no allocation.
+#define SCR_BASE   0x9C000000ULL
+#define SCR_W      1080U
+#define SCR_H      2340U
+#define SCR_BPP    4U
+#define GLYPH_W    8U
+#define GLYPH_H    16U
+#define SCR_COLS   (SCR_W / GLYPH_W)
+#define SCR_ROWS   (SCR_H / GLYPH_H)
+#define SCR_TOP    6U
+
+STATIC volatile UINT32 *mScreenBase = (volatile UINT32 *)(UINTN)SCR_BASE;
+STATIC UINT32 mScreenRow = SCR_TOP;
+STATIC UINT32 mScreenCol = 0;
+
+STATIC
+VOID
+ScreenPut (
+  IN UINT8 Ch
+  )
+{
+  volatile UINT32 *Pixel;
+  CONST UINT8 *Glyph;
+  UINTN X, Y;
+
+  if (Ch == '\n' || Ch == '\r') {
+    mScreenCol = 0;
+    if (Ch == '\n') {
+      mScreenRow++;
+    }
+  } else if (Ch == '\t') {
+    mScreenCol = (mScreenCol + 8U) & ~7U;
+  } else if (Ch >= 0x20 && Ch <= 0x7E) {
+    if (mScreenCol >= SCR_COLS) {
+      mScreenCol = 0;
+      mScreenRow++;
+    }
+    Glyph = &mScreenFont8x16[(Ch - 0x20) * GLYPH_H];
+    Pixel = mScreenBase + (mScreenRow * GLYPH_H) * SCR_W + mScreenCol * GLYPH_W;
+    for (Y = 0; Y < GLYPH_H; Y++) {
+      for (X = 0; X < GLYPH_W; X++) {
+        Pixel[Y * SCR_W + X] = (Glyph[Y] & (0x80U >> X)) ? 0xFFFFFFFFU : 0x00000000U;
+      }
+    }
+    mScreenCol++;
+  }
+
+  if (mScreenRow >= SCR_ROWS) {
+    // Wrap: clear the text area and restart at the top.
+    for (Y = (SCR_TOP * GLYPH_H) * SCR_W; Y < (SCR_ROWS * GLYPH_H) * SCR_W; Y++) {
+      mScreenBase[Y] = 0x00000000U;
+    }
+    mScreenRow = SCR_TOP;
+    mScreenCol = 0;
+  }
+}
+// --------------------------------------------------------------------------
 
 typedef struct {
   UINT32  Signature;
@@ -132,6 +196,7 @@ SerialPortWrite (
 
   for (Index = 0; Index < Count; Index++) {
     Data[Start] = Buffer[Index];
+    ScreenPut (Buffer[Index]);
     Start++;
     if (Start == UMI_RAMOOPS_CAPACITY) {
       Start = 0;
