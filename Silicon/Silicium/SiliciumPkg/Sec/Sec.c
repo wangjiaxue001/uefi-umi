@@ -19,6 +19,40 @@
 
 #include "Sec.h"
 
+// Bring-up progress marks (cmi port, 2026-11-05). The inherited framebuffer at
+// 0x9C000000 is already being scanned out (ABL's Mi logo), and ClearFrameBuffer
+// proved it is writable from SEC. Draw one white 48x48 block per milestone so
+// a hang can be located by counting blocks on screen. No font, no DXE, no GOP.
+#define MARK_FB      0x9C000000ULL
+#define MARK_STRIDE  1080U
+#define MARK_W       48U
+#define MARK_H       48U
+
+STATIC UINT32 gProgressStep = 0;
+
+STATIC
+VOID
+ProgressMark (
+  UINT32 Step
+  )
+{
+  volatile UINT32 *Fb = (volatile UINT32 *)(UINTN)MARK_FB;
+  UINT32 S;
+  UINTN X, Y;
+  UINTN X0;
+
+  gProgressStep = Step;
+  // Redraw all marks: ClearFrameBuffer() wipes them, so later calls restore.
+  for (S = 0; S <= Step; S++) {
+    X0 = (UINTN)S * (MARK_W + 8U);
+    for (Y = 0; Y < MARK_H; Y++) {
+      for (X = 0; X < MARK_W; X++) {
+        Fb[Y * MARK_STRIDE + X0 + X] = 0xFFFFFFFFU;
+      }
+    }
+  }
+}
+
 // First argument (x0) of the previous stage, saved by ModuleEntryPoint.S
 extern UINT64  gSecEntryArg0;
 
@@ -105,10 +139,12 @@ SecMain (VOID)
 
   SerialPortInitialize ();
   DEBUG ((EFI_D_ERROR, "UMI: SEC start\n"));
+  ProgressMark (0);
   // Do Platform Specific Initialization
   UmiSmmuSnapshot ("before-platform");
   PlatformInitialize ();
   UmiSmmuSnapshot ("after-platform");
+  ProgressMark (1);
   DEBUG ((EFI_D_ERROR, "UMI: platform initialized\n"));
 
 #ifndef MDEPKG_NDEBUG
@@ -120,15 +156,18 @@ SecMain (VOID)
 
   // Print Firmware Version
   PrintFirmwareVersion ();
+  ProgressMark (2);
 
   // Initialize Debug Agent
   InitializeDebugAgent (DEBUG_AGENT_INIT_POSTMEM_SEC, NULL, NULL);
   SaveAndSetDebugTimerInterrupt (TRUE);
+  ProgressMark (3);
 #endif
 
   DEBUG ((EFI_D_ERROR, "UMI: memory init start\n"));
   // Initialize Memory
   Status = InitializeMemory ();
+  ProgressMark (4);
   DEBUG ((EFI_D_ERROR, "UMI: memory init returned %r\n", Status));
   if (EFI_ERROR (Status)) {
     return;
@@ -143,6 +182,7 @@ SecMain (VOID)
   DEBUG ((EFI_D_ERROR, "UMI: platform PEI start\n"));
   // Initialize Platform HOBs
   Status = PlatformPeim ();
+  ProgressMark (5);
   DEBUG ((EFI_D_ERROR, "UMI: platform PEI returned %r\n", Status));
   if (EFI_ERROR (Status)) {
     return;
@@ -162,6 +202,7 @@ SecMain (VOID)
   DEBUG ((EFI_D_ERROR, "UMI: FV decompress start\n"));
   // Decompress all FVs
   Status = DecompressFirstFv ();
+  ProgressMark (6);
   DEBUG ((EFI_D_ERROR, "UMI: FV decompress returned %r\n", Status));
   if (EFI_ERROR (Status)) {
     DEBUG ((EFI_D_ERROR, "Failed to Decompress FV! Status = %r\n", Status));
@@ -171,6 +212,7 @@ SecMain (VOID)
   DEBUG ((EFI_D_ERROR, "UMI: DXE core load start\n"));
   // Load DXE Core
   Status = LoadDxeCoreFromFv (NULL, 0);
+  ProgressMark (7);
   if (EFI_ERROR (Status)) {
     DEBUG ((EFI_D_ERROR, "Failed to Load DXE Core! Status = %r\n", Status));
   }
