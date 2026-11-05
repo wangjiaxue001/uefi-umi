@@ -42,7 +42,6 @@ READ_LOCK_STATUS   = TRUE
 
   INF UniXNUPkg/Application/UniXNU/UniXNU.inf
   INF UniXNUPkg/Driver/UniXNUDxe/UniXNUDxe.inf
-  INF cmiPkg/Drivers/CmiMenuDxe/CmiMenuDxe.inf
   INF MdeModulePkg/Application/BootManagerMenuApp/BootManagerMenuApp.inf
   INF PcBdsPkg/MsBootPolicy/MsBootPolicy.inf
 

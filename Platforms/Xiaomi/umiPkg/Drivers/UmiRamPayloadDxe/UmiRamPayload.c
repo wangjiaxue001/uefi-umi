@@ -19,6 +19,54 @@
 #define BOOT_BASE  0xA0000000ULL
 #define BOOT_END   0xB0000000ULL
 #define BLOCK_SIZE 512U
+
+// cmi bring-up menu: paint into the proven-writable inherited framebuffer
+// (0x9C000000, 1080x2340 BGRX32). Drawn here because this driver is proven
+// to be dispatched, unlike a stand-alone DXE driver whose DEPEX may never
+// be satisfied on this board.
+#define MENU_FB     0x9C000000ULL
+#define MENU_W      1080U
+#define MENU_H      2340U
+#define MENU_ROW_H  (MENU_H / 16)
+#define MENU_TOP    (MENU_H / 4)
+#define MENU_LEFT   (MENU_W / 8)
+#define MENU_ROW_W  (MENU_W * 3 / 4)
+
+STATIC
+VOID
+DrawBringUpMenu (
+  VOID
+  )
+{
+  volatile UINT32 *Fb = (volatile UINT32 *)(UINTN)MENU_FB;
+  UINTN Row, Col, I;
+  UINT32 Frame[3] = { 0x00FF9030U, 0x00404040U, 0x00404040U };  // BGR
+
+  for (Row = 0; Row < MENU_H; Row++) {
+    for (Col = 0; Col < MENU_W; Col++) {
+      Fb[Row * MENU_W + Col] = 0x00000000U;
+    }
+  }
+  for (Col = 0; Col < MENU_ROW_W; Col++) {
+    for (Row = 0; Row < 6; Row++) {
+      Fb[(MENU_TOP - MENU_ROW_H + Row) * MENU_W + MENU_LEFT + Col] = 0x00FFFFFFU;
+    }
+  }
+  for (I = 0; I < 3; I++) {
+    UINTN Y = MENU_TOP + I * MENU_ROW_H;
+    for (Row = 0; Row < MENU_ROW_H - 8; Row++) {
+      for (Col = 0; Col < MENU_ROW_W + 32; Col++) {
+        Fb[(Y - 6 + Row) * MENU_W + (MENU_LEFT - 16 + Col)] = Frame[I];
+      }
+    }
+    for (Row = 0; Row < MENU_ROW_H - 20; Row++) {
+      for (Col = 0; Col < MENU_ROW_W + 16; Col++) {
+        Fb[(Y + Row) * MENU_W + (MENU_LEFT - 8 + Col)] = 0x00000000U;
+      }
+    }
+  }
+  DEBUG ((DEBUG_WARN, "CMI MENU: painted into framebuffer 0x%lx\n", (UINT64)MENU_FB));
+}
 // Limit the input FAT image independently of the conventional Darwin RAM.
 // The complete image must still fit the reserved 0xA0000000..0xB0000000
 // window and remain disjoint from the ABL-adjusted device tree.
@@ -209,6 +257,7 @@ UmiRamPayloadEntry (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
   DEBUG ((DEBUG_WARN, "UMI payload connect=%r\n", Status));
   Status = gBS->HandleProtocol (Handle, &gEfiSimpleFileSystemProtocolGuid, (VOID **)&Fs);
   DEBUG ((DEBUG_WARN, "UMI payload filesystem=%r\n", Status));
+  DrawBringUpMenu ();
   // Keep the valid block device installed if a filesystem driver binds later.
   return EFI_SUCCESS;
 }

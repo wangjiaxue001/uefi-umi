@@ -70,9 +70,6 @@
 [Components]
   UniXNUPkg/Application/UniXNU/UniXNU.inf
   UniXNUPkg/Driver/UniXNUDxe/UniXNUDxe.inf
-  # 自绘菜单（bring-up）：不依赖 BDS 启动 UniXNU.efi，直接用 InheritedFbDxe 的
-  # GOP 在 framebuffer 上画菜单色块，按键由 UmiButtonsDxe 的 SimpleTextIn 提供。
-  cmiPkg/Drivers/CmiMenuDxe/CmiMenuDxe.inf
 
 [Components]
   umiPkg/Drivers/InheritedFbDxe/InheritedFbDxe.inf

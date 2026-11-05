@@ -30,9 +30,5 @@
   PrintLib
   UefiLib
 
-[Protocols]
-  gEfiGraphicsOutputProtocolGuid        ## CONSUMES
-  gEfiSimpleTextInProtocolGuid          ## CONSUMES
-
 [Depex]
   TRUE
