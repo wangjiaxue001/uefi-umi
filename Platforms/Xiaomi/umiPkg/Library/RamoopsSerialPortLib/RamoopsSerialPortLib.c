@@ -41,7 +41,10 @@
 #define GLYPH_H    16U
 #define SCR_COLS   (SCR_W / GLYPH_W)
 #define SCR_ROWS   (SCR_H / GLYPH_H)
-#define SCR_TOP    6U
+#define SCR_TOP    0U
+#define SCR_LOG_ROWS 12U   // keep DEBUG inside the top 12 rows; the UniXNU menu
+                           // is drawn in the middle/bottom of the screen, so the
+                           // console must never cover it.
 
 STATIC volatile UINT32 *mScreenBase = (volatile UINT32 *)(UINTN)SCR_BASE;
 STATIC UINT32 mScreenRow = SCR_TOP;
@@ -56,6 +59,16 @@ ScreenPut (
   volatile UINT32 *Pixel;
   CONST UINT8 *Glyph;
   UINTN X, Y;
+
+  // Keep every write inside the log band. Wrap before drawing, not after.
+  if (mScreenRow >= SCR_TOP + SCR_LOG_ROWS) {
+    for (Y = (SCR_TOP * GLYPH_H) * SCR_W;
+         Y < ((SCR_TOP + SCR_LOG_ROWS) * GLYPH_H) * SCR_W; Y++) {
+      mScreenBase[Y] = 0x00000000U;
+    }
+    mScreenRow = SCR_TOP;
+    mScreenCol = 0;
+  }
 
   if (Ch == '\n' || Ch == '\r') {
     mScreenCol = 0;
@@ -77,15 +90,6 @@ ScreenPut (
       }
     }
     mScreenCol++;
-  }
-
-  if (mScreenRow >= SCR_ROWS) {
-    // Wrap: clear the text area and restart at the top.
-    for (Y = (SCR_TOP * GLYPH_H) * SCR_W; Y < (SCR_ROWS * GLYPH_H) * SCR_W; Y++) {
-      mScreenBase[Y] = 0x00000000U;
-    }
-    mScreenRow = SCR_TOP;
-    mScreenCol = 0;
   }
 }
 // --------------------------------------------------------------------------
