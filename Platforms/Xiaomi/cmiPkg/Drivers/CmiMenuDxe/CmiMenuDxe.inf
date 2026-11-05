@@ -35,4 +35,4 @@
   gEfiSimpleTextInProtocolGuid          ## CONSUMES
 
 [Depex]
-  gEfiGraphicsOutputProtocolGuid
+  TRUE
