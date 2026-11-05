@@ -20,10 +20,11 @@
 !include KonaPkg/KonaPkg.dsc.inc
 
 [BuildOptions]
-  # 与 umi 相同的 opt-out：不通过猜测的 SEC framebuffer 绘制，改用固件 DisplayDxe
-  # 发布的真实 GOP。宏名保持 UMI_ 前缀，因为消费它的是 SiliciumPkg/Sec/Sec.c，
-  # 改名前需要先改那段代码。
-  *_CLANGPDB_AARCH64_CC_FLAGS = -D UMI_SKIP_EARLY_FRAMEBUFFER=1 -D UNIXNU_BRINGUP_MENU=1
+  # 排障实验（2026-11-05）：暂时放开 SEC 早期画屏（往 Display Reserved 0x9C000000
+  # 直接写像素，不依赖 DXE/GOP）。若屏幕从"卡 Mi logo"变成有图案/文字，说明 SEC
+  # 存活、死点在 DXE；若仍是 Mi logo，死点在 SEC 或 shim 跳转本身。
+  # （原 umi 的 opt-out 注释与宏名 UMI_ 前缀保留，因为消费方是 SiliciumPkg/Sec/Sec.c）
+  *_CLANGPDB_AARCH64_CC_FLAGS = -D UNIXNU_BRINGUP_MENU=1
 
 [PcdsFixedAtBuild]
   # 实测：memory base 0x80000000（三 bank 求和 0x1fbb00000，见设备仓库 inputs.md）
