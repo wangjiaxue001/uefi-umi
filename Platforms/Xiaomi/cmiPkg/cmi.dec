@@ -1,0 +1,17 @@
+## @file
+# SPDX-License-Identifier: BSD-2-Clause-Patent
+##
+[Defines]
+  DEC_SPECIFICATION = 0x0001001B
+  PACKAGE_NAME = cmiPkg
+  PACKAGE_GUID = E65101D8-1C20-4726-A8ED-B91AEA6EE25E
+  PACKAGE_VERSION = 0.1
+
+[Includes]
+  Include
+
+# cmi 复用同一 checkout 里 umiPkg 的 SPMI/RPMH 实现（同为 SM8250 的 PM8150 系列），
+# 因此库类沿用它声明的名字。
+[LibraryClasses]
+  UmiSpmiLib|Include/Library/UmiSpmiLib.h
+  UmiRpmhLib|Include/Library/UmiRpmhLib.h
