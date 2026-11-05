@@ -1,0 +1,38 @@
+## @file
+# cmi bring-up: draw a visible UniXNU menu directly on the inherited GOP,
+# without depending on BDS launching UniXNU.efi.
+# SPDX-License-Identifier: BSD-2-Clause-Patent
+##
+
+[Defines]
+  INF_VERSION    = 0x00010005
+  BASE_NAME      = CmiMenuDxe
+  FILE_GUID      = 8C2B1A44-3E6D-4F18-9A50-C6D0E7B21F93
+  MODULE_TYPE    = DXE_DRIVER
+  VERSION_STRING = 0.1
+  ENTRY_POINT    = CmiMenuEntry
+
+[Sources]
+  CmiMenu.c
+
+[Packages]
+  MdePkg/MdePkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+
+[LibraryClasses]
+  UefiBootServicesTableLib
+  UefiRuntimeServicesTableLib
+  UefiDriverEntryPoint
+  MemoryAllocationLib
+  BaseMemoryLib
+  BaseLib
+  DebugLib
+  PrintLib
+  UefiLib
+
+[Protocols]
+  gEfiGraphicsOutputProtocolGuid        ## CONSUMES
+  gEfiSimpleTextInProtocolGuid          ## CONSUMES
+
+[Depex]
+  gEfiGraphicsOutputProtocolGuid
