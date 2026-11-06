@@ -235,9 +235,23 @@ UmiRamPayloadEntry (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
   if (Sectors == 0) {
     Sectors = ReadUnaligned32 ((CONST UINT32 *)(mRamBase + 32));
   }
+  DEBUG ((DEBUG_WARN, "UMI payload volume: oem=%a bps=%u sectors=%u span=%Lu fs-bytes=%Lu\n",
+          (CONST CHAR8 *)mRamBase + 3,
+          (UINT32)ReadUnaligned16 ((CONST UINT16 *)(mRamBase + 11)),
+          (UINT32)Sectors, End - Start, (UINT64)Sectors * BLOCK_SIZE));
+  // The volume may sit anywhere inside the ABL-provided window: ABL is not
+  // required to hand over exactly the filesystem size (it can round the span
+  // up when it places a large ramdisk), so only reject a volume that does not
+  // fit. Requiring equality silently dropped the 64 MiB package payload.
   if ((mRamBase[510] != 0x55) || (mRamBase[511] != 0xAA) ||
       (ReadUnaligned16 ((CONST UINT16 *)(mRamBase + 11)) != BLOCK_SIZE) ||
-      ((UINT64)Sectors * BLOCK_SIZE != End - Start)) {
+      (Sectors == 0) ||
+      ((UINT64)Sectors * BLOCK_SIZE > End - Start) ||
+      (End - Start - (UINT64)Sectors * BLOCK_SIZE > SIZE_4MB)) {
+    DEBUG ((DEBUG_WARN, "UMI payload volume rejected: sig=%02x%02x bps=%u sectors=%u span=%Lu\n",
+            mRamBase[510], mRamBase[511],
+            (UINT32)ReadUnaligned16 ((CONST UINT16 *)(mRamBase + 11)),
+            (UINT32)Sectors, End - Start));
     return EFI_COMPROMISED_DATA;
   }
   mMedia.MediaId = 1;
