@@ -40,7 +40,7 @@ DrawBringUpMenu (
 {
   volatile UINT32 *Fb = (volatile UINT32 *)(UINTN)MENU_FB;
   UINTN Row, Col, I;
-  UINT32 Frame[3] = { 0x00FF9030U, 0x00404040U, 0x00404040U };  // BGR
+  UINT32 Frame[3] = { 0x003090FFU, 0x00404040U, 0x00404040U };  // RGB: 0x003090FF = blue B0 G90 RFF
 
   for (Row = 0; Row < MENU_H; Row++) {
     for (Col = 0; Col < MENU_W; Col++) {

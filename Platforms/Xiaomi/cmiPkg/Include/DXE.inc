@@ -15,18 +15,20 @@
   INF MdeModulePkg/Universal/PrintDxe/PrintDxe.inf
   INF MdeModulePkg/Universal/DevicePathDxe/DevicePathDxe.inf
   INF MdeModulePkg/Universal/CapsuleRuntimeDxe/CapsuleRuntimeDxe.inf
-  INF MdeModulePkg/Universal/Console/ConPlatformDxe/ConPlatformDxe.inf
-  INF MdeModulePkg/Universal/Console/ConSplitterDxe/ConSplitterDxe.inf
-  INF MdeModulePkg/Universal/Console/GraphicsConsoleDxe/GraphicsConsoleDxe.inf
   INF MdeModulePkg/Universal/HiiDatabaseDxe/HiiDatabaseDxe.inf
   INF MdeModulePkg/Universal/SetupBrowserDxe/SetupBrowserDxe.inf
   INF ArmPkg/Drivers/ArmGicDxe/ArmGicDxe.inf
   INF ArmPkg/Drivers/TimerDxe/TimerDxe.inf
-  INF MdeModulePkg/Universal/BdsDxe/BdsDxe.inf
-  INF umiPkg/Drivers/InheritedFbDxe/InheritedFbDxe.inf
-  INF umiPkg/Drivers/UmiButtonsDxe/UmiButtonsDxe.inf
   INF MdeModulePkg/Universal/Disk/UnicodeCollation/EnglishDxe/EnglishDxe.inf
   INF MdeModulePkg/Universal/Disk/DiskIoDxe/DiskIoDxe.inf
   INF FatPkg/EnhancedFatDxe/Fat.inf
   INF umiPkg/Drivers/UmiRamPayloadDxe/UmiRamPayloadDxe.inf
+  # GOP and input before BdsDxe (see APRIORI.inc comment).
+  INF umiPkg/Drivers/InheritedFbDxe/InheritedFbDxe.inf
+  INF umiPkg/Drivers/UmiButtonsDxe/UmiButtonsDxe.inf
+  INF MdeModulePkg/Universal/Console/ConPlatformDxe/ConPlatformDxe.inf
+  INF MdeModulePkg/Universal/Console/ConSplitterDxe/ConSplitterDxe.inf
+  INF MdeModulePkg/Universal/Console/GraphicsConsoleDxe/GraphicsConsoleDxe.inf
   INF DarwinBootPkg/Driver/DarwinBoot.inf
+  INF UniXNUPkg/Driver/UniXNUDxe/UniXNUDxe.inf
+  INF MdeModulePkg/Universal/BdsDxe/BdsDxe.inf
