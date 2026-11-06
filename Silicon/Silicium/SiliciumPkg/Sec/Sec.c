@@ -28,8 +28,6 @@
 #define MARK_W       48U
 #define MARK_H       48U
 
-STATIC UINT32 gProgressStep = 0;
-
 STATIC
 VOID
 ProgressMark (
@@ -41,7 +39,6 @@ ProgressMark (
   UINTN X, Y;
   UINTN X0;
 
-  gProgressStep = Step;
   // Redraw all marks: ClearFrameBuffer() wipes them, so later calls restore.
   for (S = 0; S <= Step; S++) {
     X0 = (UINTN)S * (MARK_W + 8U);
