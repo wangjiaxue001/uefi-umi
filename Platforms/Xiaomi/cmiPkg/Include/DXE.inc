@@ -30,5 +30,6 @@
   INF MdeModulePkg/Universal/Console/ConSplitterDxe/ConSplitterDxe.inf
   INF MdeModulePkg/Universal/Console/GraphicsConsoleDxe/GraphicsConsoleDxe.inf
   INF DarwinBootPkg/Driver/DarwinBoot.inf
-  INF UniXNUPkg/Driver/UniXNUDxe/UniXNUDxe.inf
+  # UniXNUDxe is listed in cmi.fdf (which includes this file) - do not repeat
+  # it here or GenFv fails with a duplicate FILE_GUID.
   INF MdeModulePkg/Universal/BdsDxe/BdsDxe.inf
