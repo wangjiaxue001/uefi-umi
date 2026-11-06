@@ -21,7 +21,9 @@ APRIORI DXE {
   INF MdeModulePkg/Universal/Disk/UnicodeCollation/EnglishDxe/EnglishDxe.inf
   INF MdeModulePkg/Universal/Disk/DiskIoDxe/DiskIoDxe.inf
   INF FatPkg/EnhancedFatDxe/Fat.inf
-  INF umiPkg/Drivers/UmiRamPayloadDxe/UmiRamPayloadDxe.inf
+  # Payload publisher runs before BdsDxe so the volume exists when BDS boots
+  # UniXNU.efi (documented order in docs/zh/porting/uefi-firmware.md).
+  INF UniXNUPkg/Driver/UniXNURamDiskDxe/UniXNURamDiskDxe.inf
   # GOP and input must exist BEFORE BdsDxe entry: BDS registers ConIn/ConOut
   # variables and connects the consoles in BeforeConsole. Dispatch order below
   # follows the observed DXE execution evidence (screen DEBUG log):

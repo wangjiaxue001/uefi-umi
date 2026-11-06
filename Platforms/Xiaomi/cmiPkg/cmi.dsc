@@ -94,7 +94,13 @@
   MdeModulePkg/Universal/Disk/UnicodeCollation/EnglishDxe/EnglishDxe.inf
   MdeModulePkg/Universal/Disk/DiskIoDxe/DiskIoDxe.inf
   FatPkg/EnhancedFatDxe/Fat.inf
-  umiPkg/Drivers/UmiRamPayloadDxe/UmiRamPayloadDxe.inf
+  # 文档 docs/zh/porting/uefi-firmware.md「负载发现」要求的官方负载发布驱动：
+  # 它从 Mu-Silicium FDT 的 /chosen/linux,initrd-start/end 取地址，把 initrd
+  # 发布为只读块设备，再由 DiskIoDxe + Fat 提供 SimpleFileSystem。
+  # cmi 之前用的是 umi 的自制 UmiRamPayloadDxe（bring-up 用），校验过严，
+  # 64 MiB 的 package 负载被拒，菜单回退成 built-in configuration。
+  UniXNUPkg/Driver/UniXNURamDiskDxe/UniXNURamDiskDxe.inf
+  # 保留 umi 的检查工具，但不再参与负载发布。
   umiPkg/Application/UmiPayloadCheck/UmiPayloadCheck.inf
   umiPkg/Application/UmiPayload64Check/UmiPayload64Check.inf
   umiPkg/Application/UmiMemoryDiag/UmiMemoryDiag.inf

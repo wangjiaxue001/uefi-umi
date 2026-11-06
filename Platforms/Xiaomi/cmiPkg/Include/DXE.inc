@@ -22,7 +22,10 @@
   INF MdeModulePkg/Universal/Disk/UnicodeCollation/EnglishDxe/EnglishDxe.inf
   INF MdeModulePkg/Universal/Disk/DiskIoDxe/DiskIoDxe.inf
   INF FatPkg/EnhancedFatDxe/Fat.inf
-  INF umiPkg/Drivers/UmiRamPayloadDxe/UmiRamPayloadDxe.inf
+  # Official payload publisher required by docs/zh/porting/uefi-firmware.md
+  # "payload discovery"; it replaces umi's bring-up UmiRamPayloadDxe, whose
+  # size check rejected the 64 MiB package payload.
+  INF UniXNUPkg/Driver/UniXNURamDiskDxe/UniXNURamDiskDxe.inf
   # GOP and input before BdsDxe (see APRIORI.inc comment).
   INF umiPkg/Drivers/InheritedFbDxe/InheritedFbDxe.inf
   INF umiPkg/Drivers/UmiButtonsDxe/UmiButtonsDxe.inf
